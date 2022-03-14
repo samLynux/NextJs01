@@ -38,6 +38,8 @@ export default function EventPage({evt}) {
               <h3>Description</h3>
               <p>{evt.attributes.description}</p>
               <h3>Venue {evt.venue}</h3>
+              <p>{evt.attributes.venue}</p>
+              <h3>Address {evt.address}</h3>
               <p>{evt.attributes.address}</p>
 
               <Link href={`/events`}>
