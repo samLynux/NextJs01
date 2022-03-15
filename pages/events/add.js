@@ -1,9 +1,12 @@
+import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 import Layout from "@/components/layout"
 import styles from "@/styles/Form.module.css"
 import { useRouter } from "next/router"
 import { useState } from "react"
 import Link from "next/link"
 import { API_URL } from "@/config/index"
+import slugify from "slugify";
 
 export default function AddEventPage() {
     const [values, setValues] = useState({
@@ -17,9 +20,39 @@ export default function AddEventPage() {
     })
     const router = useRouter()
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(values);
+        // console.log(values);
+        const hasEmptyFields = Object.values(values).some(
+            (element) => element === ''
+        )
+
+        if(hasEmptyFields){
+            toast.error("Please fill all fields");
+        }
+        const bigData = {data: {
+            name: values.name,
+            slug: slugify(values.name, {lower:true}),
+            performers: values.performers,
+            venue: values.venue,
+            address: values.address,
+            date: values.date,
+            time: values.time,
+            description:values.description,
+        }}
+        const res = await fetch(`${API_URL}/api/events`,{
+            method:  'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(bigData)
+        })
+        if(!res.ok){
+            toast.error("Something went wrong")
+        }else{
+            const evt = await res.json()
+            router.push(`${evt.data.attributes.slug}`)
+        }
     }
     
 
@@ -32,7 +65,7 @@ export default function AddEventPage() {
         <Layout title="Add New Event"> 
         <Link href='/events'>Go Back</Link>
           <h1>Add</h1>
- 
+        <ToastContainer/>
         <form onSubmit={handleSubmit} className={styles.form}>
             <div className={styles.grid}>
                 <div>
