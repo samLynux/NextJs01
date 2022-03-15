@@ -10,6 +10,7 @@ import { API_URL } from "@/config/index"
 import slugify from "slugify";
 import moment from "moment";
 import {FaImage} from 'react-icons/fa'
+import Modal from "@/components/modal";
 
 export default function EditEventPage({evt, id}) {
     const [values, setValues] = useState({
@@ -23,6 +24,8 @@ export default function EditEventPage({evt, id}) {
     })
     const [imagePreview,setImagePreview] = useState(evt.image.data
             ? evt.image.data.attributes.formats.thumbnail: null)
+    
+    const [showModal, setShowModal] = useState(false)
     const router = useRouter()
 
     const handleSubmit = async (e) => {
@@ -123,15 +126,17 @@ export default function EditEventPage({evt, id}) {
             
         }
         <div>
-            <button className="btn-secondary">
+            <button onClick={() => setShowModal(true)} className="btn-secondary">
                 <FaImage/> Set Image
             </button>
         </div>
+        <Modal show={showModal} onClose={() => setShowModal(false)}>
+            IMAGE UPLOAD
+        </Modal>
       </Layout>)
   }
   
   export async function getServerSideProps({params: {id}}) {
-    console.log(id);
     const res = await fetch(`${API_URL}/api/events/${id}?populate=*`)
     
     const evt = await res.json() 
