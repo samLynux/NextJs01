@@ -11,9 +11,9 @@ export default function SearchPage({events}) {
     <Layout title="Search Results">
         <Link href='/events'>Go Back</Link>
       <h1>Seacrh Results for {router.query.term}</h1>
-      {events.data.len === 0 && <h3>no events</h3>}
+      {events.len === 0 && <h3>no events</h3>}
 
-      {events.data.map((evt) => (
+      {events.map((evt) => (
         <EventItem key={evt.id} evt={evt}/>
       ))}
     </Layout>
@@ -21,38 +21,20 @@ export default function SearchPage({events}) {
 }
 
 export async function getServerSideProps({query: {term}}) {
-    const condition = qs.stringify({
-        filters: {
-          $or: [
-            {
-              name: {
-                $containsi: term,
-              },
-            },
-            {
-                venue: {
-                    $containsi: term,
-                },
-            },
-            {
-                performers: {
-                    $containsi: term,
-                },
-            },
-            {
-                description: {
-                    $containsi: term,
-                },
-            },
-          ],
-        },
-      }, {
-        encodeValuesOnly: true,
-      });
+    
       
-  const query = `${API_URL}/api/events?populate=*&sort=date:ASC&` + condition;
+  const query =   qs.stringify({
+    _where: {
+      _or:[
+        {name_contains: term},
+        {performers_contains: term},
+        {venue_contains: term},
+        {description_contains: term},
+      ]
+    }
+  });
   
-  const res = await fetch(query)
+  const res = await fetch(`${API_URL}/events?&_sort=date:ASC&${query}`)
   const events = await res.json() 
 
   return {

@@ -1,5 +1,5 @@
 import styles from "@/styles/Modal.module.css"
-import { useRouter } from "next/router"
+
 import { useState, useEffect } from "react"
 import ReactDOM from "react-dom"
 import {FaTimes} from 'react-icons/fa'

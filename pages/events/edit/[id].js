@@ -11,8 +11,9 @@ import slugify from "slugify";
 import moment from "moment";
 import {FaImage} from 'react-icons/fa'
 import Modal from "@/components/modal";
+import ImageUpload from "@/components/imageUpload";
 
-export default function EditEventPage({evt, id}) {
+export default function EditEventPage({evt}) {
     const [values, setValues] = useState({
         name: evt.name,
         performers: evt.performers,
@@ -22,8 +23,8 @@ export default function EditEventPage({evt, id}) {
         time: evt.time,
         description: evt.description,
     })
-    const [imagePreview,setImagePreview] = useState(evt.image.data
-            ? evt.image.data.attributes.formats.thumbnail: null)
+    const [imagePreview,setImagePreview] = useState(evt.image
+            ? evt.image.formats.thumbnail: null)
     
     const [showModal, setShowModal] = useState(false)
     const router = useRouter()
@@ -38,28 +39,28 @@ export default function EditEventPage({evt, id}) {
         if(hasEmptyFields){
             toast.error("Please fill all fields");
         }
-        const bigData = {data: {
-            name: values.name,
-            slug: slugify(values.name, {lower:true}),
-            performers: values.performers,
-            venue: values.venue,
-            address: values.address,
-            date: values.date,
-            time: values.time,
-            description:values.description,
-        }}
-        const res = await fetch(`${API_URL}/api/events/${id}`,{
+        // const bigData = {data: {
+        //     name: values.name,
+        //     slug: slugify(values.name, {lower:true}),
+        //     performers: values.performers,
+        //     venue: values.venue,
+        //     address: values.address,
+        //     date: values.date,
+        //     time: values.time,
+        //     description:values.description,
+        // }}
+        const res = await fetch(`${API_URL}/events/${evt.id}`,{
             method:  'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(bigData)
+            body: JSON.stringify(values)
         })
         if(!res.ok){
             toast.error("Something went wrong")
         }else{
             const next = await res.json()
-            router.push(`/events/${next.data.attributes.slug}`)
+            router.push(`/events/${next.slug}`)
         }
     }
     
@@ -69,6 +70,13 @@ export default function EditEventPage({evt, id}) {
         setValues({...values, [name]: value})
     }
 
+    const imageUploaded = async (e) => {
+        const res = await fetch(`${API_URL}/events/${evt.id}`)
+        const data = await res.json()
+        
+        setImagePreview(data.image.formats.thumbnail.url)
+        setShowModal(false)
+    }
     return (
         <Layout title="Add New Event"> 
         <Link href='/events'>Go Back</Link>
@@ -118,7 +126,7 @@ export default function EditEventPage({evt, id}) {
         </form>
         <h2>Event Image</h2>
         {imagePreview ? (
-            <Image src={(API_URL + evt.image.data.attributes.formats.thumbnail.url)}
+            <Image src={evt.image.formats.thumbnail.url}
                 height={100} width={170}/>
             ) : <div>
                     <p>No image uploaded</p>
@@ -131,17 +139,17 @@ export default function EditEventPage({evt, id}) {
             </button>
         </div>
         <Modal show={showModal} onClose={() => setShowModal(false)}>
-            IMAGE UPLOAD
+            <ImageUpload evtId={evt.id} imageUploaded= {imageUploaded} />
         </Modal>
       </Layout>)
   }
   
   export async function getServerSideProps({params: {id}}) {
-    const res = await fetch(`${API_URL}/api/events/${id}?populate=*`)
+    const res = await fetch(`${API_URL}/events/${id}`)
     
     const evt = await res.json() 
     
     return { 
-      props: {evt: evt.data.attributes, id}, 
+      props: {evt}, 
     }
   }

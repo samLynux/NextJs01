@@ -30,28 +30,19 @@ export default function AddEventPage() {
         if(hasEmptyFields){
             toast.error("Please fill all fields");
         }
-        const bigData = {data: {
-            name: values.name,
-            slug: slugify(values.name, {lower:true}),
-            performers: values.performers,
-            venue: values.venue,
-            address: values.address,
-            date: values.date,
-            time: values.time,
-            description:values.description,
-        }}
-        const res = await fetch(`${API_URL}/api/events`,{
+        
+        const res = await fetch(`${API_URL}/events`,{
             method:  'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(bigData)
+            body: JSON.stringify(values)
         })
         if(!res.ok){
             toast.error("Something went wrong")
         }else{
             const evt = await res.json()
-            router.push(`${evt.data.attributes.slug}`)
+            router.push(`${evt.slug}`)
         }
     }
     
