@@ -149,7 +149,7 @@ export default function EditEventPage({evt}) {
     
     const evt = await res.json() 
     
-    console.log(req.headers.cookie);
+    // console.log(req.headers.cookie);
     return { 
       props: {evt}, 
     }
