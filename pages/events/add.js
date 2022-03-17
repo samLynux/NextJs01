@@ -7,8 +7,9 @@ import { useState } from "react"
 import Link from "next/link"
 import { API_URL } from "@/config/index"
 import slugify from "slugify";
+import { parseCookies } from "@/helpers/index";
 
-export default function AddEventPage() {
+export default function AddEventPage({token}) {
     const [values, setValues] = useState({
         name: '',
         performers: '',
@@ -34,11 +35,16 @@ export default function AddEventPage() {
         const res = await fetch(`${API_URL}/events`,{
             method:  'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(values)
         })
         if(!res.ok){
+            if(res.status === 403 || res.status === 401){
+                toast.error("No token included")
+                return
+            }
             toast.error("Something went wrong")
         }else{
             const evt = await res.json()
@@ -102,3 +108,13 @@ export default function AddEventPage() {
       </Layout>)
   }
   
+
+  export async function getServerSideProps({req}){
+    const {token} = parseCookies(req)
+    
+    return {
+        props:{
+            token
+        }
+    }
+  }
