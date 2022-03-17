@@ -12,8 +12,9 @@ import moment from "moment";
 import {FaImage} from 'react-icons/fa'
 import Modal from "@/components/modal";
 import ImageUpload from "@/components/imageUpload";
+import { parseCookies } from "@/helpers/index";
 
-export default function EditEventPage({evt}) {
+export default function EditEventPage({evt, token}) {
     const [values, setValues] = useState({
         name: evt.name,
         performers: evt.performers,
@@ -39,24 +40,20 @@ export default function EditEventPage({evt}) {
         if(hasEmptyFields){
             toast.error("Please fill all fields");
         }
-        // const bigData = {data: {
-        //     name: values.name,
-        //     slug: slugify(values.name, {lower:true}),
-        //     performers: values.performers,
-        //     venue: values.venue,
-        //     address: values.address,
-        //     date: values.date,
-        //     time: values.time,
-        //     description:values.description,
-        // }}
+
         const res = await fetch(`${API_URL}/events/${evt.id}`,{
             method:  'PUT',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(values)
         })
         if(!res.ok){
+            if(res.status === 403 || res.status === 401){
+                toast.error("Unauthorized")
+                return
+            }
             toast.error("Something went wrong")
         }else{
             const next = await res.json()
@@ -73,9 +70,9 @@ export default function EditEventPage({evt}) {
     const imageUploaded = async (e) => {
         const res = await fetch(`${API_URL}/events/${evt.id}`)
         const data = await res.json()
-        
-        setImagePreview(data.image.formats.thumbnail.url)
         setShowModal(false)
+        setImagePreview(data.image.formats.thumbnail.url)
+        
     }
     return (
         <Layout title="Add New Event"> 
@@ -139,18 +136,20 @@ export default function EditEventPage({evt}) {
             </button>
         </div>
         <Modal show={showModal} onClose={() => setShowModal(false)}>
-            <ImageUpload evtId={evt.id} imageUploaded= {imageUploaded} />
+            <ImageUpload evtId={evt.id} imageUploaded= {imageUploaded}  token={token}/>
         </Modal>
       </Layout>)
-  }
+  } 
   
   export async function getServerSideProps({params: {id}, req}) {
     const res = await fetch(`${API_URL}/events/${id}`)
-    
+    const {token} = parseCookies(req)
+
+
     const evt = await res.json() 
     
     // console.log(req.headers.cookie);
     return { 
-      props: {evt}, 
+      props: {evt, token}, 
     }
   }
