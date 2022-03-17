@@ -42,7 +42,15 @@ export const AuthProvider = ( {children}) =>  {
     }
 
     const logout = async () => {
-        console.log('logout');
+        const res = await fetch(`${NEXT_URL}/api/logout`,{
+            method: 'POST'})
+        const data = await res.json()
+
+        if(res.ok){
+            setUser(data.user)
+        }else{
+            setUser(null)
+        }
     }
 
     const checkUserLoggedin = async (user) => {
@@ -51,8 +59,7 @@ export const AuthProvider = ( {children}) =>  {
 
         if(res.ok){
             setUser(data.user)
-        }else{
-            setUser(null)
+            router.push('/')
         }
     }
 
