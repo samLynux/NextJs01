@@ -1,8 +1,7 @@
 import styles from "@/styles/Form.module.css"
 
 import { useState } from "react"
-import ReactDOM from "react-dom"
-import {FaTimes} from 'react-icons/fa'
+
 import { API_URL } from "@/config/index"
 
 export default function ImageUpload({evtId, imageUploaded}){
